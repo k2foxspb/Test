@@ -44,25 +44,31 @@ class M1:
                     if self.conn and self.Exchange == 1 and time.time() - self.timer < SERVER_INTERVAL:
 
                         try:
+                            time.sleep(1)
+                            # получает данные из сокета
                             data_pack = self.conn.recv(B1).decode()
+                            # отправляет данные в сокет
                             self.process_client_message(data_pack, self.conn)
                         except:
                             print('соединение разорвано')
                             self.Pack_id = 0
                             self.Exchange = 0
-                            sys.exit(-1)
+                            sys.exit(0)
 
     def process_client_message(self, message, client):
         print('Разбор сообщения от М2:', hex(int(message)))
         if message == EXIT:
+            client.send(EXIT.encode())
             print('сообщение о завершении работы от М2')
-            sys.exit()
+            time.sleep(2)
+            self.sock.close()
+
         elif message == EXCHANGE:
             self.Exchange = 0
             print(f'изменение флага Exchange {self.Exchange}')
         else:
             print('Таймер:', time.time() - self.timer)
-
+            time.sleep(1)
             self.Pack_id += 1
             print(f'пакет c №: {message[2:4]} пришёл от М2, id М1: {self.Pack_id}')
             if self.Pack_id > 10:
@@ -70,9 +76,8 @@ class M1:
             else:
                 pack_id = '0' + str(self.Pack_id)
             answer = f'{B1}{B2_ANSWER}{pack_id}{message[5:]}'
-
             client.send(answer.encode())
-            print(answer)
+            print('тело пакета', hex(int(answer)))
             self.timer = time.time()
 
 

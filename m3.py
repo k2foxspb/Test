@@ -11,39 +11,42 @@ class M3:
         self.init_com()
 
     def send_data(self):
-        # у меня проблемы с кодировкой, поэтому такой большой костыль.
+        # Отправляет пакет в М2
         self.Pack_id += 1
         data = input('введите данные')
         if data == EXIT:
-            self.com_port.write('65535'.encode())
+            self.com_port.write(EXIT.encode())
         elif data == EXCHANGE:
-            self.com_port.write('65530'.encode())
+            self.com_port.write(EXCHANGE.encode())
         else:
             if int(data) < 16:
                 data = '0' + str(data)
             if self.Pack_id < 10:
                 str_pack = '0' + str(self.Pack_id)
-                print(str_pack)
             else:
                 str_pack = self.Pack_id
-
             data_pack = self.com_port.write(f'{B1}{B2_WRITE}{str_pack}{data}'.encode())
-
             print(f'отправлено сообщение:', hex(int(f'{B1}{B2_WRITE}{str_pack}{data}')).encode())
             print(f'длинна пакета: {data_pack} bytes')
 
     def run(self):
+        """
+        Основной цикл программы. Вызывает функцию отправки пакета в М2 и слушает СОМ порт
+
+        """
         while True:
             self.send_data()
-            time.sleep(5)
+            time.sleep(6)
             if self.com_port.inWaiting() > 0:
                 out = self.com_port.read(B1).decode()
+                if out == EXIT:
+                    print('COM port закрыт')
+                    self.com_port.close()
+                    sys.exit()
                 print('Сообщение от М2', hex(int(out)))
-            else:
-                # Если сообщение не пришло, завершаем работу приложения.
-                sys.exit()
 
     def init_com(self):
+        # Инициализация последовательного порта
         try:
             self.com_port = serial.Serial('COM8', 9600, timeout=1, bytesize=6)
             print('приложение М3 запущено')

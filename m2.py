@@ -13,30 +13,36 @@ class M2:
         self.com_port = None
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.init_com()
-        self.Exchange = 0
         self.timer = 0
+        self.flag = True
 
     def send_message_to_server(self, pack):
-
+        # Отправляет пакет в сокет.
         self.timer = time.time()
         self.sock.send(pack.encode())
         print(f'Отправлено сообщение на сервер {hex(int(pack))}')
-        if pack == EXIT:
-            sys.exit()
 
     def send_message_to_com(self, pack):
+        # Отправляет пакет в последовательный порт.
         self.com_port.write(pack.encode())
         print('отправлено сообщение на COM порт')
 
     def get_message_from_server(self):
+        # Слушает сокет
         if time.time() - self.timer < M2_INTERVAL:
             out = self.sock.recv(B1).decode()
             print(f'сообщение от сервера: {hex(int(out))} Pack_id M1: {out[3:5]}')
+            if out == EXIT:
+                self.com_port.write(out.encode())
+                self.com_port.close()
+                self.flag = False
             return out
+
         else:
             self.send_message_to_server(EXIT)
 
     def get_message_from_com(self):
+        # слушает последовательный порт.
         if self.com_port.in_waiting > 0:
             request = self.com_port.read(6).decode()
             self.Pack_id += 1
@@ -44,18 +50,27 @@ class M2:
             return request
 
     def run(self):
-        # основной цикл программы
-        while True:
+        # Основной цикл программы. time.sleep() просто для наглядности иллюстрации процесса работы.
+        while self.flag:
             try:
+                time.sleep(1)
                 com_recv = self.get_message_from_com()
+                time.sleep(1)
                 self.send_message_to_server(com_recv)
+                time.sleep(1)
                 server_recv = self.get_message_from_server()
+                time.sleep(1)
                 self.send_message_to_com(server_recv)
 
             except:
                 pass
 
     def init_com(self):
+        """
+        Инициализация последовательного порта и сокета.
+        После 5 попыток подключения завершает работу
+        """
+
         for i in range(5):
             print(f'Попытка подключения №{i + 1}')
             try:
@@ -66,9 +81,9 @@ class M2:
                 pass
             else:
                 break
-            if i > 4:
-                sys.exit()
             time.sleep(1)
+            if i > 3:
+                sys.exit(-1)
 
 
 def main():
