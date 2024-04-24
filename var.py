@@ -6,8 +6,8 @@ M2_INTERVAL = 100  # время ожидания ответа от сервер�
 
 B1 = 6
 B2_WRITE = 3
-B2_ANSWER = 33
-EXIT = '65535'  # '0xffff'
-EXCHANGE = '65530'  # '0xfffa'
+B2_ANSWER = 4
+EXIT = '99'  # '0xffff'
+EXCHANGE = '98'  # '0xfffa'
 COM_PORT_1 = 'COM8'
 COM_PORT_2 = 'COM9'

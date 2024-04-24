@@ -1,20 +1,32 @@
 import socket
 import sys
 import time
-
+import threading
 import serial
-
+from tkinter import ttk
+from tkinter import *
 from var import *
+from tkinter_app import TK_inter
 
 
-class M2:
+class TK(TK_inter):
+    def __init__(self, root):
+        super().__init__(root=root, app=M2())
+
+
+class M2(threading.Thread):
     def __init__(self):
         self.Pack_id = 0
+        self.Exchange = 0
         self.com_port = None
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.init_com()
         self.timer = 0
         self.flag = True
+        super().__init__()
+
+    def __str__(self):
+        return 'M2'
 
     def send_message_to_server(self, pack):
         # Отправляет пакет в сокет.
@@ -32,7 +44,7 @@ class M2:
         if time.time() - self.timer < M2_INTERVAL:
             out = self.sock.recv(B1).decode()
             print(f'сообщение от сервера: {hex(int(out))} Pack_id M1: {out[3:5]}')
-            if out == EXIT:
+            if out[-1] == EXIT:
                 self.com_port.write(out.encode())
                 self.com_port.close()
                 self.flag = False
@@ -74,12 +86,13 @@ class M2:
         for i in range(5):
             print(f'Попытка подключения №{i + 1}')
             try:
-                self.com_port = serial.Serial('COM9', 9600, timeout=1, bytesize=6)
+                self.com_port = serial.Serial(COM_PORT_2, 9600, timeout=1, bytesize=6)
                 self.sock.connect((IP_ADDRESS, PORT))
                 print('приложение М2 запущено!')
             except:
                 pass
             else:
+                self.Exchange = 1
                 break
             time.sleep(1)
             if i > 3:
@@ -87,8 +100,9 @@ class M2:
 
 
 def main():
-    module = M2()
-    module.run()
+    root = Tk()
+    TK(root)
+    root.mainloop()
 
 
 if __name__ == '__main__':

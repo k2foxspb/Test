@@ -1,20 +1,31 @@
 import socket
 import sys
+import threading
 import time
-import select
+from tkinter import *
+from tkinter_app import TK_inter
 
 from var import *
 
 
-class M1:
+class TK(TK_inter):
+    def __init__(self, root):
+        super().__init__(root=root, app=M1())
+
+
+class M1(threading.Thread):
+
     def __init__(self):
+        super().__init__()
         self.conn = None
         self.sock = None
-
+        self.Pack_id = 0
         self.Exchange = 0
         # таймер ожидания данных от М2
         self.timer = 0
-        self.Pack_id = 0
+
+    def __str__(self):
+        return 'M1'
 
     def init_socket(self):
         # Готовим сокет
@@ -57,13 +68,13 @@ class M1:
 
     def process_client_message(self, message, client):
         print('Разбор сообщения от М2:', hex(int(message)))
-        if message == EXIT:
+        if EXIT in message:
             client.send(EXIT.encode())
             print('сообщение о завершении работы от М2')
             time.sleep(2)
             self.sock.close()
 
-        elif message == EXCHANGE:
+        elif EXCHANGE in message:
             self.Exchange = 0
             print(f'изменение флага Exchange {self.Exchange}')
         else:
@@ -82,8 +93,9 @@ class M1:
 
 
 def main():
-    server = M1()
-    server.run()
+    root = Tk()
+    TK(root)
+    root.mainloop()
 
 
 if __name__ == '__main__':
