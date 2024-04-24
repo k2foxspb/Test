@@ -3,7 +3,9 @@ import sys
 import threading
 import time
 from tkinter import *
+
 from tkinter_app import TK_inter
+
 
 from var import *
 
@@ -14,7 +16,6 @@ class TK(TK_inter):
 
 
 class M1(threading.Thread):
-
     def __init__(self):
         super().__init__()
         self.conn = None

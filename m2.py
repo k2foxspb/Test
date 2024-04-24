@@ -3,7 +3,6 @@ import sys
 import time
 import threading
 import serial
-from tkinter import ttk
 from tkinter import *
 from var import *
 from tkinter_app import TK_inter
